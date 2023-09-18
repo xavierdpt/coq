@@ -1,0 +1,90 @@
+Usage: coqide <options> 
+
+Coq options are:
+  -I dir                 look for ML files in dir
+  -include dir           (idem)
+  -R dir coqdir          recursively map physical dir to logical coqdir
+  -Q dir coqdir          map physical dir to logical coqdir
+  -top coqdir            set the toplevel name to be coqdir instead of Top
+  -topfile f             set the toplevel name as though compiling f
+  -coqlib dir            set the coq standard library directory
+  -exclude-dir f         exclude subdirectories named f for option -R
+
+  -boot                  don't bind the `Coq.` prefix to the default -coqlib dir
+  -noinit                don't load Coq.Init.Prelude on start 
+  -nois                  (idem)
+  -compat X.Y            provides compatibility support for Coq version X.Y
+
+  -load-vernac-source f  load Coq file f.v (Load "f".)
+  -l f                   (idem)
+  -load-vernac-source-verbose f  load Coq file f.v (Load Verbose "f".)
+  -lv f	           (idem)
+  -require lib           load Coq library lib (Require lib)
+  -require-import lib, -ri lib
+                         load and import Coq library lib
+                         (equivalent to Require Import lib.)
+  -require-export lib, -re lib
+                         load and transitively import Coq library lib
+                         (equivalent to Require Export lib.)
+  -require-from root lib, -rfrom root lib
+
+                         load Coq library lib (From root Require lib.)
+  -require-import-from root lib, -rifrom root lib
+                         load and import Coq library lib
+                         (equivalent to From root Require Import lib.)
+  -require-export-from root lib, -refrom root lib
+                         load and transitively import Coq library lib
+                         (equivalent to From root Require Export lib.)
+  -load-vernac-object lib
+                         (obsolete synonym of -require lib)
+
+  -where                 print Coq's standard library location and exit
+  -config, --config      print Coq's configuration information and exit
+  -v, --version          print Coq version and exit
+  -print-version         print Coq version in easy to parse format and exit
+  -list-tags             print highlight color tags known by Coq and exit
+
+  -quiet                 unset display of extra information (implies -w "-all")
+  -w (w1,..,wn)          configure display of warnings
+  -d (d1,..,dn)          configure display of debug messages
+                         some common values are:
+                           all         print all debugging information
+                           backtrace   same as -bt
+                         use the vernac command "Test Debug" to see all
+
+  -color (yes|no|auto)   configure color output
+  -emacs                 tells Coq it is executed under Emacs
+
+  -q                     skip loading of rcfile
+  -init-file f           set the rcfile to f
+  -bt                    print OCaml backtraces
+  -diffs (on|off|removed) highlight differences between proof steps
+  -impredicative-set     set sort Set impredicative
+  -allow-sprop           allow using the proof irrelevant SProp sort
+  -disallow-sprop        forbid using the proof irrelevant SProp sort
+  -indices-matter        levels of indices (and nonuniform parameters) contribute to the level of inductives
+  -type-in-type          disable universe consistency checking
+  -mangle-names x        mangle auto-generated names using prefix x
+  -set "Foo Bar"         enable Foo Bar (as Set Foo Bar. in a file)
+  -set "Foo Bar=value"   set Foo Bar to value (value is interpreted according to Foo Bar's type)
+  -unset "Foo Bar"       disable Foo Bar (as Unset Foo Bar. in a file)
+  -time                  display the time taken by each command, outputting to the message system (stdout for coqc)
+  -time-file f           display the time taken by each command, outputting to file f
+  -profile-ltac          display the time taken by each (sub)tactic
+  -m, --memory           display total heap size at program exit
+                         (use environment variable
+                          OCAML_GC_STATS="/tmp/gclog.txt"
+                          for full Gc stats dump)
+  -bytecode-compiler (yes|no)        enable the vm_compute reduction machine
+  -native-compiler (yes|no|ondemand) enable the native_compute reduction machine
+  -native-output-dir     <directory> set the output directory for native objects
+  -nI dir                OCaml include directories for the native compiler (default if not set) 
+  -h, -help, --help      print this list of options
+
+CoqIDE specific options:
+  -f _CoqProjectFile         set _CoqProject file to _CoqProjectFile
+  -unicode-bindings f1 .. f2 load files f1..f2 with extra unicode bindings
+  -coqtop dir                look for coqidetop in dir
+  -coqtop-flags              extra flags for the coqtop subprocess
+  -debug                     enable debug mode
+  -xml-debug                 enable debug mode and print XML messages to/from CoqIDE

@@ -151,3 +151,9 @@ bin
 .dune-stamp
 theories/dune
 user-contrib/Ltac2/dune
+
+/coq-core.install
+/coq-stdlib.install
+/coq.install
+/coqide-server.install
+/coqide.install
