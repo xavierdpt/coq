@@ -1,0 +1,5 @@
+cd theories
+/home/user/coq-install/bin/coqide &
+
+
+

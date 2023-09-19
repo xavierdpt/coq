@@ -96,6 +96,7 @@ Proof.
    rewrite length_set; trivial.
 Qed.
 
+
 Lemma get_not_default_lt A (t:array A) x :
  t.[x] <> default t -> (x <? length t) = true.
 Proof.

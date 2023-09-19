@@ -66,34 +66,58 @@ Definition excluded_middle := forall A:Prop, A \/ ~ A.
 
 Lemma prop_degen_ext : prop_degeneracy -> prop_extensionality.
 Proof.
-  intros H A B [Hab Hba].
-  destruct (H A); destruct (H B).
-  - rewrite H1; exact H0.
-  - absurd B.
-    + rewrite H1; exact (fun H => H).
-    + apply Hab; rewrite H0; exact I.
-  - absurd A.
-    + rewrite H0; exact (fun H => H).
-    + apply Hba; rewrite H1; exact I.
-  - rewrite H1; exact H0.
+  unfold prop_degeneracy.
+  unfold prop_extensionality.
+  intro h.
+  intros A B.
+  intros [ hab hba ].
+  destruct (h A) as [ hal | har ]; destruct (h B) as [ hbl | hbr ].
+  all:clear h.
+  all:subst A.
+  all:subst B.
+  all:try reflexivity.
+  all:try exfalso.
+  apply hab. trivial.
+  apply hba. trivial.
 Qed.
 
 Lemma prop_degen_em : prop_degeneracy -> excluded_middle.
 Proof.
-  intros H A.
-  destruct (H A).
-  - left; rewrite H0; exact I.
-  - right; rewrite H0; exact (fun x => x).
+unfold prop_degeneracy.
+unfold excluded_middle.
+intro h.
+intro A.
+destruct (h A) as [ hal | har ].
+all:subst A.
+left. trivial.
+right. unfold not. intro f. assumption.
 Qed.
 
 Lemma prop_ext_em_degen :
   prop_extensionality -> excluded_middle -> prop_degeneracy.
 Proof.
-  intros Ext EM A.
-  destruct (EM A).
-  - left; apply (Ext A True); split;
-      [ exact (fun _ => I) | exact (fun _ => H) ].
-  - right; apply (Ext A False); split; [ exact H | apply False_ind ].
+intros h1 h2.
+red in h1.
+red in h2.
+red.
+intro A.
+destruct (h2 (A = True)) as [ htl | htr ].
+rewrite htl. left. reflexivity.
+clear h2.
+unfold not in htr.
+right.
+apply h1.
+split.
+intro a.
+apply htr.
+apply h1.
+split.
+intro a'.
+trivial.
+intros _.
+assumption.
+intro f.
+inversion f.
 Qed.
 
 (** A weakest form of propositional extensionality: extensionality for

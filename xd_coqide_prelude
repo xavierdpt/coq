@@ -1,1 +1,5 @@
-/home/user/coq-install/bin/coqide -boot -noinit &
+cd theories/Init/
+/home/user/coq-install/bin/coqide -boot -noinit -R /home/user/coq-install/lib/coq/theories/Init/ Coq.Init -I /home/user/coq-install/lib/coq-core/plugins/ltac &
+
+
+
