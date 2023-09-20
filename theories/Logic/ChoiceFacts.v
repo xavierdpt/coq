@@ -1201,6 +1201,7 @@ Import EqNotations.
   existential, which is incompatible with the computational content of
   excluded-middle *)
 
+(*
 Theorem fun_choice_and_ext_functions_repr_and_excluded_middle_imp_setoid_fun_choice :
   FunctionalChoice -> ExtensionalFunctionRepresentative -> ExcludedMiddle -> RepresentativeFunctionalChoice.
 Proof.
@@ -1241,7 +1242,9 @@ Proof.
        rewrite <- Heq1.
        reflexivity.
 Qed.
+*)
 
+(*
 Theorem setoid_functional_choice_first_characterization :
   FunctionalChoice /\ ExtensionalFunctionRepresentative /\ ExcludedMiddle <-> SetoidFunctionalChoice.
 Proof.
@@ -1257,6 +1260,7 @@ Proof.
     + apply repr_fun_choice_imp_excluded_middle.
        now apply setoid_fun_choice_imp_repr_fun_choice.
 Qed.
+*)
 
 (**********************************************************************)
 (** ** AC_fun_setoid = AC_fun + Ext_pred_repr + PI                    *)
@@ -1297,6 +1301,7 @@ Proof.
        reflexivity.
 Qed.
 
+(*
 Theorem setoid_functional_choice_second_characterization :
   FunctionalChoice /\ ExtensionalPredicateRepresentative /\ ProofIrrelevance <-> SetoidFunctionalChoice.
 Proof.
@@ -1313,6 +1318,7 @@ Proof.
        apply repr_fun_choice_imp_excluded_middle.
        now apply setoid_fun_choice_imp_repr_fun_choice.
 Qed.
+*)
 
 (**********************************************************************)
 (** * Compatibility notations *)

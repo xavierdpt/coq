@@ -96,8 +96,10 @@ Proof. (* Intuitionistic *)
 tauto.
 Qed.
 
+(*
 Lemma proof_irrelevance : forall (P:Prop) (p1 p2:P), p1 = p2.
 Proof proof_irrelevance_cci classic.
+*)
 
 (* classical_left  transforms |- A \/ B into ~B |- A *)
 (* classical_right transforms |- A \/ B into ~A |- B *)
@@ -114,13 +116,17 @@ Require Export EqdepFacts.
 
 Module Eq_rect_eq.
 
+(*
 Lemma eq_rect_eq :
   forall (U:Type) (p:U) (Q:U -> Type) (x:Q p) (h:p = p), x = eq_rect p Q x p h.
 Proof.
 intros; rewrite proof_irrelevance with (p1:=h) (p2:=eq_refl p); reflexivity.
 Qed.
+*)
 
 End Eq_rect_eq.
-
+(*
 Module EqdepTheory := EqdepTheory(Eq_rect_eq).
+
 Export EqdepTheory.
+*)

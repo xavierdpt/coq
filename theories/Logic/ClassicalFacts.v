@@ -378,6 +378,7 @@ End Proof_irrelevance_CIC.
 
 Require Import Hurkens.
 
+(*
 Section Proof_irrelevance_EM_CC.
 
   Variable or : Prop -> Prop -> Prop.
@@ -436,7 +437,7 @@ Section Proof_irrelevance_EM_CC.
   Qed.
 
 End Proof_irrelevance_EM_CC.
-
+*)
 (** Hurkens' paradox still holds with a retract from the _negative_
     fragment of [Prop] into [bool], hence weak classical logic,
     i.e. [forall A, ~A\/~~A], is enough for deriving a weak version of
@@ -526,6 +527,7 @@ End Proof_irrelevance_WEM_CC.
     logic in the CCI.
 *)
 
+(*
 Section Proof_irrelevance_CCI.
 
   Hypothesis em : forall A:Prop, A \/ ~ A.
@@ -544,11 +546,13 @@ Section Proof_irrelevance_CCI.
 
 End Proof_irrelevance_CCI.
 
+*)
+
 (** The same holds with weak excluded middle. The proof is a little
     more involved, however. *)
 
 
-
+(*
 Section Weak_proof_irrelevance_CCI.
 
   Hypothesis wem : forall A:Prop, ~~A \/ ~ A.
@@ -560,6 +564,7 @@ Section Weak_proof_irrelevance_CCI.
   Qed.
 
 End Weak_proof_irrelevance_CCI.
+*)
 
 (** Remark: in the Set-impredicative CCI, Hurkens' paradox still holds with
     [bool] in [Set] and since [~true=false] for [true] and [false]

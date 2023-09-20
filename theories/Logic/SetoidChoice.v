@@ -38,6 +38,7 @@ Require Import ChoiceFacts.
 Require Import ClassicalFacts.
 Require Import RelationClasses.
 
+(*
 Theorem setoid_choice :
   forall A B,
   forall R : A -> A -> Prop,
@@ -52,7 +53,9 @@ Proof.
   - exact extensional_function_representative.
   - exact classic.
 Qed.
+*)
 
+(*
 Theorem representative_choice :
   forall A (R:A->A->Prop), (Equivalence R) ->
   exists f : A->A, forall x : A, R x (f x) /\ forall x', R x x' -> f x = f x'.
@@ -60,3 +63,4 @@ Proof.
   apply setoid_fun_choice_imp_repr_fun_choice.
   exact setoid_choice.
 Qed.
+*)
