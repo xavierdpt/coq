@@ -64,74 +64,83 @@ Definition excluded_middle := forall A:Prop, A \/ ~ A.
 
 (** We show [prop_degeneracy <-> (prop_extensionality /\ excluded_middle)] *)
 
-Lemma prop_degen_ext : prop_degeneracy -> prop_extensionality.
-Proof.
-  unfold prop_degeneracy.
-  unfold prop_extensionality.
-  intro h.
-  intros A B.
-  intros [ hab hba ].
-  destruct (h A) as [ hal | har ]; destruct (h B) as [ hbl | hbr ].
-  all:clear h.
-  all:subst A.
-  all:subst B.
-  all:try reflexivity.
-  all:try exfalso.
-  apply hab. trivial.
-  apply hba. trivial.
-Qed.
+  Lemma prop_degen_ext : prop_degeneracy -> prop_extensionality.
+  Proof.
+    unfold prop_degeneracy.
+    unfold prop_extensionality.
+    intro h.
+    intros A B.
+    intros [ hab hba ].
+    destruct (h A) as [ hal | har ]; destruct (h B) as [ hbl | hbr ].
+    all:clear h.
+    all:subst A.
+    all:subst B.
+    all:try reflexivity.
+    all:try exfalso.
+    apply hab. trivial.
+    apply hba. trivial.
+  Qed.
 
-Lemma prop_degen_em : prop_degeneracy -> excluded_middle.
-Proof.
-unfold prop_degeneracy.
-unfold excluded_middle.
-intro h.
-intro A.
-destruct (h A) as [ hal | har ].
-all:subst A.
-left. trivial.
-right. unfold not. intro f. assumption.
-Qed.
+  Lemma prop_degen_em : prop_degeneracy -> excluded_middle.
+  Proof.
+    unfold prop_degeneracy.
+    unfold excluded_middle.
+    intro h.
+    intro A.
+    destruct (h A) as [ hal | har ].
+    all:subst A.
+    left. trivial.
+    right. unfold not. intro f. assumption.
+  Qed.
 
-Lemma prop_ext_em_degen :
-  prop_extensionality -> excluded_middle -> prop_degeneracy.
-Proof.
-intros h1 h2.
-red in h1.
-red in h2.
-red.
-intro A.
-destruct (h2 (A = True)) as [ htl | htr ].
-rewrite htl. left. reflexivity.
-clear h2.
-unfold not in htr.
-right.
-apply h1.
-split.
-intro a.
-apply htr.
-apply h1.
-split.
-intro a'.
-trivial.
-intros _.
-assumption.
-intro f.
-inversion f.
-Qed.
+  Lemma prop_ext_em_degen :
+    prop_extensionality -> excluded_middle -> prop_degeneracy.
+  Proof.
+    intros h1 h2.
+    red in h1.
+    red in h2.
+    red.
+    intro A.
+    destruct (h2 (A = True)) as [ htl | htr ].
+    rewrite htl. left. reflexivity.
+    clear h2.
+    unfold not in htr.
+    right.
+    apply h1.
+    split.
+    intro a.
+    apply htr.
+    apply h1.
+    split.
+    intro a'.
+    trivial.
+    intros _.
+    assumption.
+    intro f.
+    inversion f.
+  Qed.
 
-(** A weakest form of propositional extensionality: extensionality for
-    provable propositions only *)
+  (** A weakest form of propositional extensionality: extensionality for
+      provable propositions only *)
 
-Require Import PropExtensionalityFacts.
+  Require Import PropExtensionalityFacts.
 
-Definition provable_prop_extensionality := forall A:Prop, A -> A = True.
+  Definition provable_prop_extensionality := forall A:Prop, A -> A = True.
 
-Lemma provable_prop_ext :
-  prop_extensionality -> provable_prop_extensionality.
-Proof.
-  exact PropExt_imp_ProvPropExt.
-Qed.
+  Lemma provable_prop_ext :
+    prop_extensionality -> provable_prop_extensionality.
+  Proof.
+    intro h.
+    red.
+    red in h.
+    intro A.
+    intro ha.
+    apply h.
+    clear h.
+    split.
+    intros _. exact I.
+    intros _. exact ha.
+  Qed.
 
 (************************************************************************)
 (** * Classical logic and proof-irrelevance *)
@@ -155,8 +164,16 @@ Local Notation inhabited A := A (only parsing).
 Lemma prop_ext_A_eq_A_imp_A :
   prop_extensionality -> forall A:Prop, inhabited A -> (A -> A) = A.
 Proof.
-  intros Ext A a.
-  apply (Ext (A -> A) A); split; [ exact (fun _ => a) | exact (fun _ _ => a) ].
+  intro h.
+  intro A.
+  intro ha.
+  red in h.
+  apply h.
+  clear h.
+  split.
+  intros _. exact ha.
+  intros _ _.
+  exact ha.
 Qed.
 
 Record retract (A B:Prop) : Prop :=
@@ -166,9 +183,17 @@ Lemma prop_ext_retract_A_A_imp_A :
   prop_extensionality -> forall A:Prop, inhabited A -> retract A (A -> A).
 Proof.
   intros Ext A a.
-  rewrite (prop_ext_A_eq_A_imp_A Ext A a).
-  exists (fun x:A => x) (fun x:A => x).
-  reflexivity.
+  assert (ass: (A->A) = A).
+  {
+    apply prop_ext_A_eq_A_imp_A.
+    exact Ext. exact a.
+  }
+  rewrite ass. clear ass.
+  unshelve eexists.
+  intro x. exact x.
+  intro x. exact x.
+  simpl.
+  intro x. reflexivity.
 Qed.
 
 Record has_fixpoint (A:Prop) : Prop :=
@@ -177,6 +202,7 @@ Record has_fixpoint (A:Prop) : Prop :=
 Lemma ext_prop_fixpoint :
   prop_extensionality -> forall A:Prop, inhabited A -> has_fixpoint A.
 Proof.
+  (* TODO *)
   intros Ext A a.
   case (prop_ext_retract_A_A_imp_A Ext A a); intros g1 g2 g1_o_g2.
   exists (fun f => (fun x:A => f (g1 x x)) (g2 (fun x => f (g1 x x)))).
@@ -205,6 +231,8 @@ Definition proof_irrelevance := forall (A:Prop) (a1 a2:A), a1 = a2.
     We then map equality of boolean proofs to proof irrelevance in all
     propositions.
 *)
+
+(*
 
 Section Proof_irrelevance_gen.
 
@@ -249,11 +277,14 @@ Section Proof_irrelevance_gen.
 
 End Proof_irrelevance_gen.
 
+*)
+
 (** In the pure Calculus of Constructions, we can define the boolean
     proposition bool = (C:Prop)C->C->C but we cannot prove that it has at
     most 2 elements.
 *)
 
+(*
 Section Proof_irrelevance_Prop_Ext_CC.
 
   Definition BoolP := forall C:Prop, C -> C -> C.
@@ -276,7 +307,7 @@ Section Proof_irrelevance_Prop_Ext_CC.
   Qed.
 
 End Proof_irrelevance_Prop_Ext_CC.
-
+*)
 (** Remark: [prop_extensionality] can be replaced in lemma
     [ext_prop_dep_proof_irrel_gen] by the weakest property
     [provable_prop_extensionality].
@@ -290,6 +321,7 @@ End Proof_irrelevance_Prop_Ext_CC.
     propositional extensionality.
 *)
 
+(*
 Section Proof_irrelevance_CIC.
 
   Inductive boolP : Prop :=
@@ -309,7 +341,7 @@ Section Proof_irrelevance_CIC.
   Qed.
 
 End Proof_irrelevance_CIC.
-
+*)
 (** Can we state proof irrelevance from propositional degeneracy
   (i.e. propositional extensionality + excluded middle) without
   dependent case analysis ?

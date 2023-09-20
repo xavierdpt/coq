@@ -33,109 +33,183 @@ Section Ensembles_facts.
 
   Lemma Extension : forall B C:Ensemble U, B = C -> Same_set U B C.
   Proof.
-    intros B C H'; rewrite H'; auto with sets.
+    intros B C heq.
+    subst C.
+    red.
+    split.
+    all:red.
+    all:intro u.
+    all:intro hin.
+    all:exact hin.
   Qed.
 
   Lemma Noone_in_empty : forall x:U, ~ In U (Empty_set U) x.
   Proof.
-    red; destruct 1.
+    intro u.
+    unfold not.
+    intro hu.
+    red in hu.
+    destruct hu.
   Qed.
 
   Lemma Included_Empty : forall A:Ensemble U, Included U (Empty_set U) A.
   Proof.
-    intro; red.
-    intros x H; elim (Noone_in_empty x); auto with sets.
+    intro E.
+    red.
+    intro u.
+    intro hin.
+    red in hin.
+    destruct hin.
   Qed.
 
   Lemma Add_intro1 :
     forall (A:Ensemble U) (x y:U), In U A y -> In U (Add U A x) y.
   Proof.
-    unfold Add at 1; auto with sets.
+    intro E.
+    intros x y.
+    intro hin.
+    red.
+    red.
+    apply Union_introl.
+    exact hin.
   Qed.
 
   Lemma Add_intro2 : forall (A:Ensemble U) (x:U), In U (Add U A x) x.
   Proof.
-    unfold Add at 1; auto with sets.
+    intros E x.
+    red.
+    red.
+    apply Union_intror.
+    red.
+    apply In_singleton.
   Qed.
 
   Lemma Inhabited_add : forall (A:Ensemble U) (x:U), Inhabited U (Add U A x).
   Proof.
-    intros A x.
-    apply Inhabited_intro with (x := x); auto using Add_intro2 with sets.
+    intros E x.
+    apply (Inhabited_intro _ _ x).
+    red.
+    red.
+    right.
+    red.
+    constructor.
   Qed.
 
   Lemma Inhabited_not_empty :
     forall X:Ensemble U, Inhabited U X -> X <> Empty_set U.
   Proof.
-    intros X H'; elim H'.
-    intros x H'0; red; intro H'1.
-    absurd (In U X x); auto with sets.
-    rewrite H'1; auto using Noone_in_empty with sets.
+    intros E h.
+    red.
+    intro heq.
+    destruct h as [ x hin ].
+    red in hin.
+    subst E.
+    destruct hin.
   Qed.
 
   Lemma Add_not_Empty : forall (A:Ensemble U) (x:U), Add U A x <> Empty_set U.
   Proof.
-    intros A x; apply Inhabited_not_empty; apply Inhabited_add.
+    intros E u.
+    apply Inhabited_not_empty.
+    apply Inhabited_add.
   Qed.
 
   Lemma not_Empty_Add : forall (A:Ensemble U) (x:U), Empty_set U <> Add U A x.
   Proof.
-    intros; red; intro H; generalize (Add_not_Empty A x); auto with sets.
+    intros E u.
+    red.
+    intro h.
+    eapply Inhabited_not_empty.
+    2:symmetry.
+    2:exact h.
+    apply Inhabited_add.
   Qed.
 
   Lemma Singleton_inv : forall x y:U, In U (Singleton U x) y -> x = y.
   Proof.
-    intros x y H'; elim H'; trivial with sets.
+    intros x y h.
+    red in h.
+    destruct h.
+    reflexivity.
   Qed.
 
   Lemma Singleton_intro : forall x y:U, x = y -> In U (Singleton U x) y.
   Proof.
-    intros x y H'; rewrite H'; trivial with sets.
+    intros x y heq.
+    subst y.
+    red.
+    constructor.
   Qed.
 
   Lemma Union_inv :
     forall (B C:Ensemble U) (x:U), In U (Union U B C) x -> In U B x \/ In U C x.
   Proof.
-    intros B C x H'; elim H'; auto with sets.
+    intros B C x h.
+    red in h.
+    destruct h as [ u h | u h ].
+    left. exact h.
+    right. exact h.
   Qed.
 
   Lemma Add_inv :
     forall (A:Ensemble U) (x y:U), In U (Add U A x) y -> In U A y \/ x = y.
   Proof.
-    intros A x y H'; induction H'.
-    - left; assumption.
-    - right; apply Singleton_inv; assumption.
+    intros E x y h.
+    red in h.
+    red in h.
+    destruct h as [ u h | u h ].
+    left. exact h.
+    red in h. destruct h.
+    right. reflexivity.
   Qed.
 
   Lemma Intersection_inv :
     forall (B C:Ensemble U) (x:U),
       In U (Intersection U B C) x -> In U B x /\ In U C x.
   Proof.
-    intros B C x H'; elim H'; auto with sets.
+    intros B C u h.
+    red in h.
+    destruct h as [ u hl hr ].
+    split;assumption.
   Qed.
 
   Lemma Couple_inv : forall x y z:U, In U (Couple U x y) z -> z = x \/ z = y.
   Proof.
-    intros x y z H'; elim H'; auto with sets.
+    intros x y z h.
+    red in h.
+    destruct h.
+    left;reflexivity.
+    right;reflexivity.
   Qed.
 
   Lemma Setminus_intro :
     forall (A B:Ensemble U) (x:U),
       In U A x -> ~ In U B x -> In U (Setminus U A B) x.
   Proof.
-    unfold Setminus at 1; red; auto with sets.
+    intros A B x ha hb.
+    red.
+    red.
+    split;assumption.
   Qed.
 
   Lemma Strict_Included_intro :
     forall X Y:Ensemble U, Included U X Y /\ X <> Y -> Strict_Included U X Y.
   Proof.
-    auto with sets.
+    intros X Y h.
+    red.
+    assumption.
   Qed.
 
   Lemma Strict_Included_strict : forall X:Ensemble U, ~ Strict_Included U X X.
   Proof.
-    intro X; red; intro H'; elim H'.
-    intros H'0 H'1; elim H'1; auto with sets.
+    intros X.
+    red.
+    intro h.
+    red in h.
+    destruct h as [ _ hneq ].
+    red in hneq.
+    apply hneq.
+    reflexivity.
   Qed.
 
 End Ensembles_facts.
