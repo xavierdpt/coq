@@ -467,54 +467,17 @@ Section Proof_irrelevance_WEM_CC.
 
   Hypothesis wem : forall A:Prop, or (~~A) (~ A).
 
-  Local Notation NProp := NoRetractToNegativeProp.NProp.
-  Local Notation El := NoRetractToNegativeProp.El.
+
+
   
   Variable B : Prop.
   Variables b1 b2 : B.
 
   (** [p2b] and [b2p] form a retract if [~b1=b2] *)
 
-  Let p2b (A:NProp) := or_elim (~~El A) (~El A) B (fun _ => b1) (fun _ => b2) (wem (El A)).
-  Let b2p b : NProp := exist (fun P=>~~P -> P) (~~(b1 = b)) (fun h x => h (fun k => k x)).
 
-  Lemma wp2p1 : forall A:NProp, El A -> El (b2p (p2b A)).
-  Proof.
-    intros A. unfold p2b.
-    apply or_dep_elim with  (b := wem (El A)).
-    + intros nna a.
-      rewrite <- or_elim_redl.
-      cbn. auto.
-    + intros n x.
-      destruct (n x).
-  Qed.
 
-  Lemma wp2p2 : b1 <> b2 -> forall A:NProp, El (b2p (p2b A)) -> El A.
-  Proof.
-    intro not_eq_b1_b2.
-    intros A. unfold p2b.
-    apply or_dep_elim with  (b := wem (El A)).
-    + cbn.
-      intros x _.
-      destruct A. cbn in x |- *.
-      auto.
-    + intros na.
-      rewrite <- or_elim_redr. cbn.
-      intros h. destruct (h not_eq_b1_b2).
-  Qed.
 
-  (** By Hurkens's paradox, we get a weak form of proof irrelevance. *)
-
-  Theorem wproof_irrelevance_cc : ~~(b1 = b2).
-  Proof.
-    intros h.
-    unshelve (refine (let NB := exist (fun P=>~~P -> P) B _ in _)).
-    { exact (fun _ => b1). }
-    pose proof (NoRetractToNegativeProp.paradox NB p2b b2p (wp2p2 h) wp2p1) as paradox.
-    unshelve (refine (let F := exist (fun P=>~~P->P) False _ in _)).
-    { auto. }
-    exact (paradox F).
-  Qed.
 
 End Proof_irrelevance_WEM_CC.
 
