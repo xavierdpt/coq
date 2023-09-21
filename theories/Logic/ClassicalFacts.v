@@ -821,23 +821,3 @@ Proof.
   + right. intro HP.
      destruct (Hf true) as (_,H). apply Hneq, H. now right.
 Qed.
-
-Theorem excluded_middle_imp_representative_boolean_partition :
-  excluded_middle -> representative_boolean_partition.
-Proof.
-  intros EM R H.
-  destruct (EM (R true false)).
-  - exists (fun _ => true).
-    intros []; firstorder.
-  - exists (fun b => b).
-    intro b. split.
-    + reflexivity.
-    + destruct b, y; intros HR; easy || now symmetry in HR.
-Qed.
-
-Theorem excluded_middle_iff_representative_boolean_partition :
-  excluded_middle <-> representative_boolean_partition.
-Proof.
-  split; auto using excluded_middle_imp_representative_boolean_partition,
-                    representative_boolean_partition_imp_excluded_middle.
-Qed.

@@ -878,23 +878,6 @@ Proof.
   apply (proj2_sig (DefDescr B (R x) (H x))).
 Qed.
 
-(** Remark, the following corollaries morally hold:
-
-Definition In_propositional_context (A:Type) := forall C:Prop, (A -> C) -> C.
-
-Corollary constructive_definite_descr_in_prop_context_iff_fun_reification :
-   In_propositional_context ConstructiveIndefiniteDescription
-   <-> FunctionalChoice.
-
-Corollary constructive_definite_descr_in_prop_context_iff_fun_reification :
-   In_propositional_context ConstructiveDefiniteDescription
-   <-> FunctionalRelReification.
-
-but expecting [FunctionalChoice] (resp. [FunctionalRelReification]) to
-be applied on the same Type universes on both sides of the first
-(resp. second) equivalence breaks the stratification of universes.
-*)
-
 (**********************************************************************)
 (** * Excluded-middle + definite description => computational excluded-middle *)
 
@@ -1182,94 +1165,7 @@ Proof.
     + now apply setoid_fun_choice_imp_repr_fun_choice.
 Qed.
 
-(** Note: What characterization to give of
-RepresentativeFunctionalChoice? A formulation of it as a functional
-relation would certainly be equivalent to the formulation of
-SetoidFunctionalChoice as a functional relation, but in their
-functional forms, SetoidFunctionalChoice seems strictly stronger *)
-
-(**********************************************************************)
-(** * AC_fun_setoid = AC_fun + Ext_fun_repr + EM                      *)
-
 Import EqNotations.
-
-(** ** This is the main theorem in [[Carlström04]] *)
-
-(** Note: all ingredients have a computational meaning when taken in
-  separation. However, to compute with the functional choice,
-  existential quantification has to be thought as a strong
-  existential, which is incompatible with the computational content of
-  excluded-middle *)
-
-(*
-Theorem fun_choice_and_ext_functions_repr_and_excluded_middle_imp_setoid_fun_choice :
-  FunctionalChoice -> ExtensionalFunctionRepresentative -> ExcludedMiddle -> RepresentativeFunctionalChoice.
-Proof.
-  intros FunChoice SetoidFunRepr EM A R (Hrefl,Hsym,Htrans).
-  assert (H:forall P:Prop, exists b, b = true <-> P).
-  { intros P. destruct (EM P).
-    - exists true; firstorder.
-    - exists false; easy. }
-  destruct (FunChoice _ _ _ H) as (c,Hc).
-  pose (class_of a y := c (R a y)).
-  pose (isclass f := exists x:A, f x = true).
-  pose (class := {f:A -> bool | isclass f}).
-  pose (contains (c:class) (a:A) := proj1_sig c a = true).
-  destruct (FunChoice class A contains) as (f,Hf).
-  - intros f. destruct (proj2_sig f) as (x,Hx).
-    exists x. easy.
-  - destruct (SetoidFunRepr A bool) as (h,Hh).
-    assert (Hisclass:forall a, isclass (h (class_of a))).
-    { intro a. exists a. destruct (Hh (class_of a)) as (Ha,Huniqa).
-      rewrite <- Ha. apply Hc. apply Hrefl. }
-   pose (f':= fun a => exist _ (h (class_of a)) (Hisclass a) : class).
-    exists (fun a => f (f' a)).
-    intros x. destruct (Hh (class_of x)) as (Hx,Huniqx). split.
-    + specialize Hf with (f' x). unfold contains in Hf. simpl in Hf. rewrite <- Hx in Hf. apply Hc. assumption.
-    + intros y Hxy.
-       f_equal.
-       assert (Heq1: h (class_of x) = h (class_of y)).
-       { apply Huniqx. intro z. unfold class_of.
-         destruct (c (R x z)) eqn:Hxz.
-         - symmetry. apply Hc. apply -> Hc in Hxz. firstorder.
-         - destruct (c (R y z)) eqn:Hyz.
-           + apply -> Hc in Hyz. rewrite <- Hxz. apply Hc. firstorder.
-           + easy. }
-       assert (Heq2:rew Heq1 in Hisclass x = Hisclass y).
-       { apply proof_irrelevance_cci, EM. }
-       unfold f'.
-       rewrite <- Heq2.
-       rewrite <- Heq1.
-       reflexivity.
-Qed.
-*)
-
-(*
-Theorem setoid_functional_choice_first_characterization :
-  FunctionalChoice /\ ExtensionalFunctionRepresentative /\ ExcludedMiddle <-> SetoidFunctionalChoice.
-Proof.
-  split.
-  - intros (FunChoice & SetoidFunRepr & EM).
-    apply functional_rel_reification_and_repr_fun_choice_imp_setoid_fun_choice.
-    + intros A B. apply fun_choice_imp_functional_rel_reification, FunChoice.
-    + now apply fun_choice_and_ext_functions_repr_and_excluded_middle_imp_setoid_fun_choice.
-  - intro SetoidFunChoice. repeat split.
-    + now intros A B; apply setoid_fun_choice_imp_fun_choice.
-    + apply repr_fun_choice_imp_ext_function_repr.
-       now apply setoid_fun_choice_imp_repr_fun_choice.
-    + apply repr_fun_choice_imp_excluded_middle.
-       now apply setoid_fun_choice_imp_repr_fun_choice.
-Qed.
-*)
-
-(**********************************************************************)
-(** ** AC_fun_setoid = AC_fun + Ext_pred_repr + PI                    *)
-
-(** Note: all ingredients have a computational meaning when taken in
-  separation. However, to compute with the functional choice,
-  existential quantification has to be thought as a strong
-  existential, which is incompatible with proof-irrelevance which
-  requires existential quantification to be truncated *)
 
 Theorem fun_choice_and_ext_pred_ext_and_proof_irrel_imp_setoid_fun_choice :
   FunctionalChoice -> ExtensionalPredicateRepresentative -> ProofIrrelevance -> RepresentativeFunctionalChoice.
@@ -1301,33 +1197,8 @@ Proof.
        reflexivity.
 Qed.
 
-(*
-Theorem setoid_functional_choice_second_characterization :
-  FunctionalChoice /\ ExtensionalPredicateRepresentative /\ ProofIrrelevance <-> SetoidFunctionalChoice.
-Proof.
-  split.
-  - intros (FunChoice & ExtPredRepr & PI).
-    apply functional_rel_reification_and_repr_fun_choice_imp_setoid_fun_choice.
-    + intros A B. now apply fun_choice_imp_functional_rel_reification.
-    + now apply fun_choice_and_ext_pred_ext_and_proof_irrel_imp_setoid_fun_choice.
-  - intro SetoidFunChoice. repeat split.
-    + now intros A B; apply setoid_fun_choice_imp_fun_choice.
-    + apply repr_fun_choice_imp_ext_pred_repr.
-       now apply setoid_fun_choice_imp_repr_fun_choice.
-    + red. apply proof_irrelevance_cci.
-       apply repr_fun_choice_imp_excluded_middle.
-       now apply setoid_fun_choice_imp_repr_fun_choice.
-Qed.
-*)
-
 (**********************************************************************)
 (** * Compatibility notations *)
+
 Notation description_rel_choice_imp_funct_choice :=
   functional_rel_reification_and_rel_choice_imp_fun_choice (only parsing).
-
-Notation funct_choice_imp_rel_choice := fun_choice_imp_rel_choice (only parsing).
-
-Notation FunChoice_Equiv_RelChoice_and_ParamDefinDescr :=
- fun_choice_iff_rel_choice_and_functional_rel_reification (only parsing).
-
-Notation funct_choice_imp_description := fun_choice_imp_functional_rel_reification (only parsing).
