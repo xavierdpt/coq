@@ -1,2 +1,3 @@
+set -e
 dune build -p coq-core,coq-stdlib,coq,coqide-server,coqide
-dune install --prefix=/home/user/coq-install coq-core coq-stdlib coq coqide-server coqide
+#dune install --prefix=/home/user/coq-install coq-core coq-stdlib coq coqide-server coqide

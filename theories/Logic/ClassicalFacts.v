@@ -376,7 +376,7 @@ End Proof_irrelevance_CIC.
     paradox of system U- (e.g. Hurkens' paradox).
 *)
 
-Require Import Hurkens.
+
 
 (*
 Section Proof_irrelevance_EM_CC.
