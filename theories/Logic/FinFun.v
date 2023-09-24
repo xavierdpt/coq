@@ -1,19 +1,5 @@
-(************************************************************************)
-(*         *   The Coq Proof Assistant / The Coq Development Team       *)
-(*  v      *         Copyright INRIA, CNRS and contributors             *)
-(* <O___,, * (see version control and CREDITS file for authors & dates) *)
-(*   \VV/  **************************************************************)
-(*    //   *    This file is distributed under the terms of the         *)
-(*         *     GNU Lesser General Public License Version 2.1          *)
-(*         *     (see LICENSE file for the text of the license)         *)
-(************************************************************************)
-
-(** * Functions on finite domains *)
-
-(** Main result : for functions [f:A->A] with finite [A],
-    f injective <-> f bijective <-> f surjective. *)
-
-Require Import List PeanoNat Compare_dec EqNat Decidable ListDec. Require Fin.
+Require Import List PeanoNat Compare_dec EqNat Decidable ListDec.
+Require Fin.
 Set Implicit Arguments.
 
 (** General definitions *)
@@ -27,78 +13,154 @@ Definition Surjective {A B} (f : A->B) :=
 Definition Bijective {A B} (f : A->B) :=
  exists g:B->A, (forall x, g (f x) = x) /\ (forall y, f (g y) = y).
 
-(** Finiteness is defined here via exhaustive list enumeration *)
-
 Definition Full {A:Type} (l:list A) := forall a:A, In a l.
 Definition Finite (A:Type) := exists (l:list A), Full l.
-
-(** In many of the following proofs, it will be convenient to have
-    list enumerations without duplicates. As soon as we have
-    decidability of equality (in Prop), this is equivalent
-    to the previous notion (s. lemma Finite_dec). *)
 
 Definition Listing {A:Type} (l:list A) := NoDup l /\ Full l.
 Definition Finite' (A:Type) := exists (l:list A), Listing l.
 
 Lemma Listing_decidable_eq {A:Type} (l:list A): Listing l -> decidable_eq A.
 Proof.
-  intros (Hnodup & Hfull) a a'.
-  now apply (NoDup_list_decidable Hnodup).
+  intro hl.
+  red in hl.
+  destruct hl as [ Hnodup Hfull ].
+  intros x y.
+  assert (lem1:=NoDup_list_decidable).
+  specialize (lem1 A l).
+  specialize (lem1 Hnodup).
+  apply lem1.
+  all:red in Hfull.
+  all:apply Hfull.
 Qed.
 
 Lemma Finite_dec {A:Type}: Finite A /\ decidable_eq A <-> Finite' A.
 Proof.
   split.
-  - intros ((l, Hfull) & Hdec).
-    destruct (uniquify Hdec l) as (l' & H_nodup & H_inc).
-    exists l'. split; trivial.
-    intros a. apply H_inc. apply Hfull.
-  - intros (l & Hlist).
-    apply Listing_decidable_eq in Hlist as Heqdec.
-    destruct Hlist as (Hnodup & Hfull).
-    split; [ exists l | ]; assumption.
+  {
+    intros [ hfin hdec ].
+    red.
+    red in hfin.
+    assert (lem1:=uniquify).
+    specialize (lem1 A).
+    specialize (lem1 hdec).
+    destruct hfin as [ l hfull ].
+    specialize (lem1 l).
+    destruct lem1 as [ l' hl' ].
+    exists l'.
+    red.
+    destruct hl' as [ hnodup hincl ].
+    split.
+    { exact hnodup. }
+    {
+      red in hincl.
+      red.
+      red in hfull.
+      intro x.
+      apply hincl.
+      apply hfull.
+    }
+  }
+  {
+    intro hfin.
+    red in hfin.
+    destruct hfin as [ l hl ].
+    split.
+    {
+      red in hl.
+      destruct hl as [ hnodup hfull ].
+      red.
+      exists l.
+      exact hfull.
+    }
+    {
+      eapply Listing_decidable_eq.
+      exact hl.
+    }
+  }
 Qed.
-
-(* Finite_alt is a weaker version of Finite_dec and has been deprecated.  *)
-Lemma Finite_alt_deprecated A (d:decidable_eq A) : Finite A <-> Finite' A.
-Proof.
- split.
- - intros F. now apply Finite_dec.
- - intros (l & _ & F). now exists l.
-Qed.
-#[deprecated(since="8.17", note="Use Finite_dec instead.")]
-Notation Finite_alt := Finite_alt_deprecated.
 
 (** Injections characterized in term of lists *)
 
 Lemma Injective_map_NoDup A B (f:A->B) (l:list A) :
  Injective f -> NoDup l -> NoDup (map f l).
 Proof.
- intros Ij. induction 1 as [|x l X N IH]; simpl; constructor; trivial.
- rewrite in_map_iff. intros (y & E & Y). apply Ij in E. now subst.
+  intros Ij.
+  red in Ij.
+  induction 1 as [|x l X N IH].
+  all:simpl.
+  { constructor. }
+  {
+    constructor.
+    2:assumption.
+    assert (lem1:=in_map_iff).
+    red.
+    intro hin.
+    apply lem1 in hin.
+    clear lem1.
+    destruct hin as [y [ E Y ] ].
+    apply Ij in E.
+    clear Ij.
+    subst y.
+    red in X.
+    apply X.
+    exact Y.
+  }
 Qed.
 
 Lemma Injective_list_carac A B (d:decidable_eq A)(f:A->B) :
   Injective f <-> (forall l, NoDup l -> NoDup (map f l)).
 Proof.
- split.
- - intros. now apply Injective_map_NoDup.
- - intros H x y E.
-   destruct (d x y); trivial.
-   assert (N : NoDup (x::y::nil)).
-   { repeat constructor; simpl; intuition. }
-   specialize (H _ N). simpl in H. rewrite E in H.
-   inversion_clear H; simpl in *; intuition.
+  split.
+  {
+    intro hinj.
+    intro l.
+    apply Injective_map_NoDup.
+    exact hinj.
+  }
+  {
+   intros H x y E.
+   red in d.
+   specialize (d x y).
+   red in d.
+    destruct d as [ heq | hneq ].
+    { subst y. reflexivity. }
+    {
+      assert (N : NoDup (x::y::nil)).
+      {
+        constructor.
+        {
+          simpl.
+          red.
+          intro h.
+          destruct h as [ hl | hr ].
+          { subst y. apply hneq. reflexivity. }
+          { destruct hr. }
+        }
+        {
+          constructor.
+          { simpl. red.  destruct 1. }
+          { constructor. }
+        }
+      }
+      specialize (H _ N).
+      simpl in H.
+      rewrite E in H.
+      inversion_clear H.
+      simpl in *.
+      red in H0.
+      exfalso. apply H0. left. reflexivity.
+    }
+  }
 Qed.
 
 Lemma Injective_carac A B (l:list A) : Listing l ->
    forall (f:A->B), Injective f <-> NoDup (map f l).
 Proof.
  intros L f. split.
- - intros Ij. apply Injective_map_NoDup; trivial. apply L.
+ - intros Ij. apply Injective_map_NoDup. assumption. destruct L. assumption.
  - intros N x y E.
-   assert (X : In x l) by apply L.
-   assert (Y : In y l) by apply L.
+   assert (X : In x l). red in L. destruct L. red in H0. apply H0.
+   assert (Y : In y l). red in L. destruct L. red in H0. apply H0.
    apply In_nth_error in X. destruct X as (i,X).
    apply In_nth_error in Y. destruct Y as (j,Y).
    assert (X' := map_nth_error f _ _ X).
@@ -172,67 +234,6 @@ Proof.
    apply (Injective_carac L'), L.
 Qed.
 
-(** An injective and surjective function is bijective.
-    We need here stronger hypothesis : decidability of equality in Type. *)
-
-Definition EqDec (A:Type) := forall x y:A, {x=y}+{x<>y}.
-
-(** First, we show that a surjective f has an inverse function g such that
-    f.g = id. *)
-
-(* NB: instead of (Finite A), we could ask for (RecEnum A) with:
-Definition RecEnum A := exists h:nat->A, surjective h.
-*)
-
-Lemma Finite_Empty_or_not A :
-  Finite A -> (A->False) \/ exists a:A,True.
-Proof.
- intros (l,F).
- destruct l as [|a l].
- - left; exact F.
- - right; now exists a.
-Qed.
-
-Lemma Surjective_inverse :
-  forall A B, Finite A -> EqDec B ->
-   forall f:A->B, Surjective f ->
-    exists g:B->A, forall x, f (g x) = x.
-Proof.
- intros A B F d f Su.
- destruct (Finite_Empty_or_not F) as [noA | (a,_)].
- - (* A is empty : g is obtained via False_rect *)
-   assert (noB : B -> False). { intros y. now destruct (Su y). }
-   exists (fun y => False_rect _ (noB y)).
-   intro y. destruct (noB y).
- - (* A is inhabited by a : we use it in Option.get *)
-   destruct F as (l,F).
-   set (h := fun x k => if d (f k) x then true else false).
-   set (get := fun o => match o with Some y => y | None => a end).
-   exists (fun x => get (List.find (h x) l)).
-   intros x.
-   case_eq (find (h x) l); simpl; clear get; [intros y H|intros H].
-   * apply find_some in H. destruct H as (_,H). unfold h in H.
-     now destruct (d (f y) x) in H.
-   * exfalso.
-     destruct (Su x) as (y & Y).
-     generalize (find_none _ l H y (F y)).
-     unfold h. now destruct (d (f y) x).
-Qed.
-
-(** Same, with more knowledge on the inverse function: g.f = f.g = id *)
-
-Lemma Injective_Surjective_Bijective :
- forall A B, Finite A -> EqDec B ->
-  forall f:A->B, Injective f -> Surjective f -> Bijective f.
-Proof.
- intros A B F d f Ij Su.
- destruct (Surjective_inverse F d Su) as (g, E).
- exists g. split; trivial.
- intros y. apply Ij. now rewrite E.
-Qed.
-
-
-(** An example of finite type : [Fin.t] *)
 
 Lemma Fin_Finite n : Finite (Fin.t n).
 Proof.
@@ -246,10 +247,6 @@ Proof.
    + now left.
    + right. now apply in_map.
 Qed.
-
-(** Instead of working on a finite subset of nat, another
-    solution is to use restricted [nat->nat] functions, and
-    to consider them only below a certain bound [n]. *)
 
 Definition bFun n (f:nat->nat) := forall x, x < n -> f x < n.
 
@@ -266,45 +263,12 @@ Module Fin2Restrict.
 Notation n2f := Fin.of_nat_lt.
 Definition f2n {n} (x:Fin.t n) := proj1_sig (Fin.to_nat x).
 Definition f2n_ok n (x:Fin.t n) : f2n x < n := proj2_sig (Fin.to_nat x).
-Definition n2f_f2n : forall n x, n2f (f2n_ok x) = x := @Fin.of_nat_to_nat_inv.
 Definition f2n_n2f x n h : f2n (n2f h) = x := f_equal (@proj1_sig _ _) (@Fin.to_nat_of_nat x n h).
 Definition n2f_ext : forall x n h h', n2f h = n2f h' := @Fin.of_nat_ext.
 Definition f2n_inj : forall n x y, f2n x = f2n y -> x = y := @Fin.to_nat_inj.
 
-Definition extend n (f:Fin.t n -> Fin.t n) : (nat->nat) :=
- fun x =>
-   match le_lt_dec n x with
-     | left _ => 0
-     | right h => f2n (f (n2f h))
-   end.
-
 Definition restrict n (f:nat->nat)(hf : bFun n f) : (Fin.t n -> Fin.t n) :=
  fun x => let (x',h) := Fin.to_nat x in n2f (hf _ h).
-
-Ltac break_dec H :=
- let H' := fresh "H" in
- destruct le_lt_dec as [H'|H'];
-  [elim (proj1 (Nat.le_ngt _ _) H' H)
-  |try rewrite (n2f_ext H' H) in *; try clear H'].
-
-Lemma extend_ok n f : bFun n (@extend n f).
-Proof.
- intros x h. unfold extend. break_dec h. apply f2n_ok.
-Qed.
-
-Lemma extend_f2n n f (x:Fin.t n) : extend f (f2n x) = f2n (f x).
-Proof.
- generalize (n2f_f2n x). unfold extend, f2n, f2n_ok.
- destruct (Fin.to_nat x) as (x',h); simpl.
- break_dec h.
- now intros ->.
-Qed.
-
-Lemma extend_n2f n f x (h:x<n) : n2f (extend_ok f h) = f (n2f h).
-Proof.
- generalize (extend_ok f h). unfold extend in *. break_dec h. intros h'.
- rewrite <- n2f_f2n. now apply n2f_ext.
-Qed.
 
 Lemma restrict_f2n n f hf (x:Fin.t n) :
  f2n (@restrict n f hf x) = f (f2n x).
@@ -319,37 +283,6 @@ Proof.
  unfold restrict. generalize (f2n_n2f h). unfold f2n.
  destruct (Fin.to_nat (n2f h)) as (x',h'); simpl. intros ->.
  now apply n2f_ext.
-Qed.
-
-Lemma extend_surjective n f :
-  bSurjective n (@extend n f) <-> Surjective f.
-Proof.
- split.
- - intros hf y.
-   destruct (hf _ (f2n_ok y)) as (x & h & Eq).
-   exists (n2f h).
-   apply f2n_inj. now rewrite <- Eq, <- extend_f2n, f2n_n2f.
- - intros hf y hy.
-   destruct (hf (n2f hy)) as (x,Eq).
-   exists (f2n x).
-   split.
-   + apply f2n_ok.
-   + rewrite extend_f2n, Eq. apply f2n_n2f.
-Qed.
-
-Lemma extend_injective n f :
-  bInjective n (@extend n f) <-> Injective f.
-Proof.
- split.
- - intros hf x y Eq.
-   apply f2n_inj. apply hf; try apply f2n_ok.
-   now rewrite 2 extend_f2n, Eq.
- - intros hf x y hx hy Eq.
-   rewrite <- (f2n_n2f hx), <- (f2n_n2f hy). f_equal.
-   apply hf.
-   rewrite <- 2 extend_n2f.
-   generalize (extend_ok f hx) (extend_ok f hy).
-   rewrite Eq. apply n2f_ext.
 Qed.
 
 Lemma restrict_surjective n f h :
@@ -386,8 +319,6 @@ Qed.
 End Fin2Restrict.
 Import Fin2Restrict.
 
-(** We can now use Proof via the equivalence ... *)
-
 Lemma bInjective_bSurjective n (f:nat->nat) :
  bFun n f -> (bInjective n f <-> bSurjective n f).
 Proof.
@@ -396,27 +327,4 @@ Proof.
  apply Endo_Injective_Surjective.
  - apply Fin_Finite.
  - intros x y. destruct (Fin.eq_dec x y); [left|right]; trivial.
-Qed.
-
-Lemma bSurjective_bBijective n (f:nat->nat) :
- bFun n f -> bSurjective n f ->
- exists g, bFun n g /\ forall x, x < n -> g (f x) = x /\ f (g x) = x.
-Proof.
- intro hf.
- rewrite <- (restrict_surjective hf). intros Su.
- assert (Ij : Injective (restrict hf)).
- { apply Endo_Injective_Surjective; trivial.
-   - apply Fin_Finite.
-   - intros x y. destruct (Fin.eq_dec x y); [left|right]; trivial. }
- assert (Bi : Bijective (restrict hf)).
- { apply Injective_Surjective_Bijective; trivial.
-   - apply Fin_Finite.
-   - exact Fin.eq_dec. }
- destruct Bi as (g & Hg & Hg').
- exists (extend g).
- split.
- - apply extend_ok.
- - intros x Hx. split.
-   + now rewrite <- (f2n_n2f Hx), <- (restrict_f2n hf), extend_f2n, Hg.
-   + now rewrite <- (f2n_n2f Hx), extend_f2n, <- (restrict_f2n hf), Hg'.
 Qed.

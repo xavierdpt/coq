@@ -414,35 +414,4 @@ apply (constructive_indefinite_ground_description_nat P' P'_decidable)  in H1.
 destruct H1 as [n Hn]. exists (g n); unfold P' in Hn; assumption.
 Defined.
 
-Lemma constructive_definite_ground_description : (exists! x : A, P x) -> {x : A | P x}.
-Proof.
-  intros; apply constructive_indefinite_ground_description; firstorder.
-Defined.
-
-Definition constructive_ground_epsilon (E : exists x : A, P x) : A
-  := proj1_sig (constructive_indefinite_ground_description E).
-
-Definition constructive_ground_epsilon_spec (E : (exists x, P x)) : P (constructive_ground_epsilon E)
-  := proj2_sig (constructive_indefinite_ground_description E).
-
 End ConstructiveGroundEpsilon.
-
-(* begin hide *)
-(* Compatibility: the qualificative "ground" was absent from the initial
-names of the results in this file but this had introduced confusion
-with the similarly named statement in Description.v *)
-Notation constructive_indefinite_description_nat :=
-  constructive_indefinite_ground_description_nat (only parsing).
-Notation constructive_epsilon_spec_nat :=
-  constructive_ground_epsilon_spec_nat (only parsing).
-Notation constructive_epsilon_nat :=
-  constructive_ground_epsilon_nat (only parsing).
-Notation constructive_indefinite_description :=
-  constructive_indefinite_ground_description (only parsing).
-Notation constructive_definite_description :=
-  constructive_definite_ground_description (only parsing).
-Notation constructive_epsilon_spec :=
-  constructive_ground_epsilon_spec (only parsing).
-Notation constructive_epsilon :=
-  constructive_ground_epsilon (only parsing).
-(* end hide *)

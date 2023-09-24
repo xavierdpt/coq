@@ -1,60 +1,4 @@
-(* -*- coding: utf-8 -*- *)
-(************************************************************************)
-(*         *   The Coq Proof Assistant / The Coq Development Team       *)
-(*  v      *         Copyright INRIA, CNRS and contributors             *)
-(* <O___,, * (see version control and CREDITS file for authors & dates) *)
-(*   \VV/  **************************************************************)
-(*    //   *    This file is distributed under the terms of the         *)
-(*         *     GNU Lesser General Public License Version 2.1          *)
-(*         *     (see LICENSE file for the text of the license)         *)
-(************************************************************************)
-
-(* File Eqdep.v created by Christine Paulin-Mohring in Coq V5.6, May 1992 *)
-(* Further documentation and variants of eq_rect_eq by Hugo Herbelin,
-   Apr 2003 *)
-(* Abstraction with respect to the eq_rect_eq axiom and renaming to
-   EqdepFacts.v by Hugo Herbelin, Mar 2006 *)
-
-(** This file defines dependent equality and shows its equivalence with
-    equality on dependent pairs (inhabiting sigma-types). It derives
-    the consequence of axiomatizing the invariance by substitution of
-    reflexive equality proofs and shows the equivalence between the 4
-    following statements
-
-    - Invariance by Substitution of Reflexive Equality Proofs.
-    - Injectivity of Dependent Equality
-    - Uniqueness of Identity Proofs
-    - Uniqueness of Reflexive Identity Proofs
-    - Streicher's Axiom K
-
-  These statements are independent of the calculus of constructions [2].
-
-  References:
-
-  [1] T. Streicher, Semantical Investigations into Intensional Type Theory,
-      Habilitationsschrift, LMU München, 1993.
-  [2] M. Hofmann, T. Streicher, The groupoid interpretation of type theory,
-      Proceedings of the meeting Twenty-five years of constructive
-      type theory, Venice, Oxford University Press, 1998
-
-Table of contents:
-
-1. Definition of dependent equality and equivalence with equality of
-   dependent pairs and with dependent pair of equalities
-
-2. Eq_rect_eq <-> Eq_dep_eq <-> UIP <-> UIP_refl <-> K
-
-3. Definition of the functor that builds properties of dependent
-   equalities assuming axiom eq_rect_eq
-
-*)
-
-(************************************************************************)
-(** * Definition of dependent equality and equivalence with equality of dependent pairs *)
-
 Import EqNotations.
-
-(* Set Universe Polymorphism. *)
 
 Section Dependent_Equality.
 
@@ -68,8 +12,6 @@ Section Dependent_Equality.
   #[local]
   Hint Constructors eq_dep: core.
 
-  Lemma eq_dep_refl : forall (p:U) (x:P p), eq_dep p x p x.
-  Proof eq_dep_intro.
 
   Lemma eq_dep_sym :
     forall (p q:U) (x:P p) (y:P q), eq_dep p x q y -> eq_dep q y p x.
@@ -458,13 +400,6 @@ Proof (eq_dep_eq__UIP U eq_dep_eq).
 Lemma UIP_refl : forall (x:U) (p:x = x), p = eq_refl x.
 Proof (UIP__UIP_refl U UIP).
 
-(** Streicher's axiom K is a direct consequence of Uniqueness of
-    Reflexive Identity Proofs *)
-
-Lemma Streicher_K :
-  forall (x:U) (P:x = x -> Prop), P (eq_refl x) -> forall p:x = x, P p.
-Proof (UIP_refl__Streicher_K U UIP_refl).
-
 End Axioms.
 
 (** UIP implies the injectivity of equality on dependent pairs in Type *)
@@ -489,13 +424,6 @@ Qed.
 
 Lemma eq_dep_non_dep :
   forall U P p q x y, @eq_dep U (fun _ => P) p x q y -> x = y.
-Proof.
-intros * []. reflexivity.
-Qed.
-
-Lemma f_eq_dep_non_dep :
-  forall U (P:U->Type) R p q x y (f:forall p, P p -> R),
-    eq_dep p x q y -> f p x = f q y.
 Proof.
 intros * []. reflexivity.
 Qed.
