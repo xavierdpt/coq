@@ -7,8 +7,9 @@
 (*         *     GNU Lesser General Public License Version 2.1          *)
 (*         *     (see LICENSE file for the text of the license)         *)
 (************************************************************************)
-
+(*
 Require Import DecidableClass.
+*)
 
 (** The type [bool] is defined in the prelude as
 [[
@@ -237,10 +238,12 @@ all:symmetry.
 all:try assumption.
 Qed.
 
+(*
 #[global]
 Instance Decidable_eq_bool : forall (x y : bool), Decidable (eq x y) := {
   Decidable_spec := eqb_true_iff x y
 }.
+*)
 
 Lemma eqb_false_iff : forall a b:bool, eqb a b = false <-> a <> b.
 Proof.

@@ -1,5 +1,12 @@
 Require Import Bool PArith DecidableClass Ring Lia.
 
+Require Import DecidableClass.
+
+#[global]
+Instance Decidable_eq_bool : forall (x y : bool), Decidable (eq x y) := {
+  Decidable_spec := eqb_true_iff x y
+}.
+
 Ltac bool :=
 repeat match goal with
 | [ H : ?P && ?Q = true |- _ ] =>

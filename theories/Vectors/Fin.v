@@ -1,67 +1,90 @@
-(************************************************************************)
-(*         *   The Coq Proof Assistant / The Coq Development Team       *)
-(*  v      *         Copyright INRIA, CNRS and contributors             *)
-(* <O___,, * (see version control and CREDITS file for authors & dates) *)
-(*   \VV/  **************************************************************)
-(*    //   *    This file is distributed under the terms of the         *)
-(*         *     GNU Lesser General Public License Version 2.1          *)
-(*         *     (see LICENSE file for the text of the license)         *)
-(************************************************************************)
-
 Require Import PeanoNat.
 Require Arith_base.
 
-(** [fin n] is a convenient way to represent \[1 .. n\]
-
-[fin n] can be seen as a n-uplet of unit. [F1] is the first element of
-the n-uplet. If [f] is the k-th element of the (n-1)-uplet, [FS f] is the
-(k+1)-th element of  the n-uplet.
-
-   Author: Pierre Boutillier
-   Institution: PPS, INRIA 12/2010-01/2012-07/2012
-*)
-
 Inductive t : nat -> Set :=
-|F1 : forall {n}, t (S n)
-|FS : forall {n}, t n -> t (S n).
+| F1 : forall {n}, t (S n)
+| FS : forall {n}, t n -> t (S n).
 
 Section SCHEMES.
-Definition case0 P (p: t 0): P p :=
-  match p with | F1 | FS  _ => fun devil => False_rect (@ID) devil (* subterm !!! *) end.
 
-Definition caseS' {n : nat} (p : t (S n)) : forall (P : t (S n) -> Type) 
-  (P1 : P F1) (PS : forall (p : t n), P (FS p)), P p :=
-  match p with
-  | @F1 k => fun P P1 PS => P1
-  | FS pp => fun P P1 PS => PS pp
-  end.
+Lemma case0 P (p: t 0): P p.
+Proof.
+  refine (match p with @F1 _ => _ | @FS _ _ => _ end).
+  exact idProp.
+  exact idProp.
+Qed.
+
+Lemma caseS' {n : nat} (p : t (S n)) :
+  forall (P : t (S n) -> Type)
+  (P1 : P F1) (PS : forall (p : t n), P (FS p)), P p.
+Proof.
+  refine (match p with @F1 k => _ | @FS k pp => _ end).
+  intros. exact P1.
+  intros. apply PS.
+Qed.
+
 
 Definition caseS (P: forall {n}, t (S n) -> Type)
   (P1: forall n, @P n F1) (PS : forall {n} (p: t n), P (FS p))
-  {n} (p: t (S n)) : P p := caseS' p P (P1 n) PS.
+  {n} (p: t (S n)) : P p.
+Proof.
+  apply caseS'.
+  apply P1.
+  apply PS.
+Qed.
 
 Definition rectS (P: forall {n}, t (S n) -> Type)
   (P1: forall n, @P n F1) (PS : forall {n} (p: t (S n)), P p -> P (FS p)):
-  forall {n} (p: t (S n)), P p :=
-fix rectS_fix {n} (p: t (S n)): P p:=
-  match p with
-  | @F1 k => P1 k
-  | @FS 0 pp => case0 (fun f => P (FS f)) pp
-  | @FS (S k) pp => PS pp (rectS_fix pp)
-  end.
+  forall {n} (p: t (S n)), P p.
+Proof.
+  intros n p.
+  generalize dependent n.
+  refine (fix f n p {struct p} := _).
+  refine (match p with @F1 k => _ | @FS k p' => _ end);clear p n.
+  { apply P1. }
+  {
+    generalize dependent p'.
+    refine (match k with O => _ | S k' => _ end);clear k.
+    { intro p'. inversion_clear p'. }
+    { intro p'. apply PS. apply f. }
+  }
+Qed.
 
 Definition rect2 (P : forall {n} (a b : t n), Type)
   (H0 : forall n, @P (S n) F1 F1)
   (H1 : forall {n} (f : t n), P F1 (FS f))
   (H2 : forall {n} (f : t n), P (FS f) F1)
   (HS : forall {n} (f g : t n), P f g -> P (FS f) (FS g)) :
-    forall {n} (a b : t n), P a b :=
-  fix rect2_fix {n} (a : t n) {struct a} : forall (b : t n), P a b :=
-    match a with
-    | @F1 m => fun (b : t (S m)) => caseS' b (P F1) (H0 _) H1
-    | @FS m a' => fun (b : t (S m)) =>
-      caseS' b (fun b => P (@FS m a') b) (H2 a') (fun b' => HS _ _ (rect2_fix a' b'))
-    end.
+    forall {n} (a b : t n), P a b.
+Proof.
+  refine (fix f n a {struct a } := _).
+  refine (match a with @F1 k => _ | @FS k p' => _ end);clear a n.
+  {
+    intro b.
+    apply caseS'.
+    { apply H0. }
+    { intro p. apply H1. }
+  }
+  {
+    generalize dependent p'.
+    refine (match k with O => _ | S k' => _ end).
+    {
+      intro p'.
+      inversion_clear p'.
+    }
+    {
+      intro p'.
+      intro b.
+      apply caseS'.
+      { apply H2. }
+      {
+        intro p.
+        apply HS.
+        apply f.
+      }
+    }
+  }
+Qed.
 
 End SCHEMES.
 
